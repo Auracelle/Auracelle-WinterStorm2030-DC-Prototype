@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Auracelle WinterStorm2030 — Governance Capacity Instrument v7.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.js/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <svg class="login-chart-bg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <defs><pattern id="gridP" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0,0 L40,0 L40,40 L0,40 Z" fill="none" stroke="#3a5568" stroke-width="0.4" opacity="0.3"/></pattern></defs>
+    <rect width="800" height="600" fill="url(#gridP)"/>
+    <g stroke="#0ed7c4" stroke-width="1" fill="none" opacity="0.3">
+      <path d="M50,500 C150,400 100,300 250,280 C400,260 380,150 550,120 C650,100 700,180 760,150" stroke-dasharray="4 6" style="animation: dash-flow 6s linear infinite;"/>
+      <path d="M100,560 C200,460 180,380 320,350 C460,320 440,220 600,180" stroke-dasharray="4 6" style="animation: dash-flow 7s linear infinite;"/>
+    </g>
+  </svg>
+  <div class="login-ring" style="width:640px;height:640px;"></div>
+  <div class="login-ring" style="width:440px;height:440px;"></div>
+  <div class="login-sweep"></div>
+  <div class="login-box tilt-card" id="loginBox">
+    <div class="login-mark">— SAS-219 · GREY ZONE GOVERNANCE —</div>
+    <div class="login-title">WinterStorm2030</div>
+    <div class="login-sub">E-IAIG-HT Governance Capacity Instrument<br>Unclassified // For Official Use // Panel Only</div>
+    <input type="text" id="loginUser" class="login-input" placeholder="CALLSIGN" autocomplete="off"/>
+    <input type="password" id="loginPass" class="login-input" placeholder="ACCESS CODE"/>
+    <button class="login-btn" onclick="doLogin()">Authenticate</button>
+    <div class="login-error" id="loginError">✕ Access Denied — Credentials Not Recognized</div>
+    <div class="login-footer">© 2026 AURACELLE AI GOVERNANCE LABS<br>DEVELOPED INDEPENDENTLY BY GRACE-ALICE EVANS</div>
+  </div>
+</div>
+
+<!-- CONTESTED NEGOTIATION TABLE -->
+<div class="contested-overlay" id="contestedOverlay">
+  <div class="contested-modal">
+    <div class="contested-head">
+      <div>
+        <div class="contested-title">⚖ Contested Table</div>
+        <div class="contested-sub">Deadlock Detected // Governance Artifact Under Dispute // Concession Trade Required</div>
+      </div>
+      <button class="close-btn" onclick="closeContested()">✕ CLOSE</button>
+    </div>
+    <div class="info-strip"><strong>DEADLOCK PROTOCOL ACTIVE</strong> — A player has held position for &gt;3 turns without movement. Each party declares one concession type to trade. The Agentic AI scores: <strong>ACCEPT / ESCALATE / EXPLOIT.</strong></div>
+    <div class="mb16">
+      <label class="field-label">Disputed Governance Artifact</label>
+      <select id="disputedArtifact" class="input-field">
+        <option value="svalbard">Svalbard Treaty — Article 9 Demilitarisation</option>
+        <option value="article5">NATO Article 5 — Activation Threshold</option>
+        <option value="caofa">CAOFA — Moratorium Extension</option>
+        <option value="minerals">Greenland Critical Mineral Access</option>
+      </select>
+    </div>
+    <div class="mb16">
+      <div class="panel-title" style="margin-bottom:12px;font-size: 18px;">Concession Trade Declaration</div>
+      <div class="trade-grid-head">
+        <div></div>
+        <div class="trade-col-label" style="color:var(--beacon);">Access</div>
+        <div class="trade-col-label" style="color:var(--brass);">Resource</div>
+        <div class="trade-col-label" style="color:var(--fathom-lt);">Narrative/Legal</div>
+      </div>
+      <div id="tradeRows"></div>
+    </div>
+    <div class="flex-row mb16">
+      <button class="btn btn-flare" onclick="runEscalation()">Run Agentic AI Assessment</button>
+      <button class="btn btn-beacon" onclick="logResolution()">Log Resolution</button>
+    </div>
+    <div class="escalation-output" id="escalationOutput">
+      <div style="font-family:var(--font-m);font-size: 13px;letter-spacing:1.5px;color:var(--flare);text-transform:uppercase;margin-bottom:10px;">Agentic AI Assessment — Red Team Response</div>
+      <div id="escalationText"></div>
+    </div>
+
+    <div style="border-top:1px solid var(--line2);margin:22px 0 18px;padding-top:18px;">
+      <div class="panel-title" style="margin-bottom:6px;font-size: 18px;">⚖ Arbitration Track <span style="font-family:var(--font-m);font-size:12px;color:var(--text-faint);text-transform:none;letter-spacing:0.3px;">— Boundary Waters / Columbia River / Canterbury model</span></div>
+      <div style="font-size: 15px;color:var(--text-faint);margin-bottom:14px;">An alternative to trading concessions: a standing-commission style escalation ladder for a specific grey-zone violation against a specific strategic asset. Reaching Binding Arbitration counts as a treaty-track resolution for Win-Win purposes.</div>
+
+      <div id="arbSetup" class="grid-2 mb16">
+        <div><label class="field-label">Grey-Zone Violation Type</label>
+          <select id="arbViolation" class="input-field">
+            <option value="Unsafe Interference">Unsafe Interference</option>
+            <option value="Unauthorized Inspection">Unauthorized Inspection</option>
+            <option value="Navigation Obstruction">Navigation Obstruction</option>
+            <option value="Tampering">Tampering</option>
+            <option value="Discriminatory Access Restriction">Discriminatory Access Restriction</option>
+            <option value="Data Denial">Data Denial</option>
+            <option value="Coercive Maintenance Disruption">Coercive Maintenance Disruption</option>
+          </select>
+        </div>
+        <div><label class="field-label">Strategic Asset</label>
+          <select id="arbAsset" class="input-field">
+            <option value="GIUK Undersea Cable Corridor">GIUK Undersea Cable Corridor</option>
+            <option value="Svalbard Fibre Link">Svalbard Fibre Link</option>
+            <option value="Arctic Pipeline Segment">Arctic Pipeline Segment</option>
+            <option value="Denmark Strait Shipping Lane">Denmark Strait Shipping Lane</option>
+            <option value="Northern Sea Route Corridor">Northern Sea Route Corridor</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-beacon" id="arbStartBtn" onclick="startArbitration()">Open Arbitration Case</button>
+
+      <div id="arbActive" style="display:none;margin-top:18px;">
+        <div id="arbLadder" class="arb-ladder"></div>
+        <div id="arbCaseNote" style="font-size: 16px;color:var(--text-dim);margin:14px 0;"></div>
+        <div class="flex-row" style="gap:10px;">
+          <button class="btn btn-ghost" id="arbAdvanceBtn" onclick="advanceArbStage()">Advance to Next Stage</button>
+          <button class="btn btn-flare" id="arbRuleBtn" style="display:none;" onclick="issueArbitrationRuling()">Issue Binding Ruling</button>
+        </div>
+        <div id="arbLog"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="landingScreen" style="display:none;">
+  <div class="landing-wrap">
+    <div class="landing-mark">AW</div>
+    <div class="landing-eyebrow">NATO STO SAS-219 // High North Scenarios for Wargaming &amp; Analysis</div>
+    <h1 class="landing-title">WinterStorm2030</h1>
+    <p class="landing-lede">A governance capacity instrument, not a combat simulator. WinterStorm2030 tracks a live <strong>NATO Capability Gap</strong> as NATO/Nordic actors (Finland, Norway, Sweden, Denmark/Greenland, Iceland) and adversaries (Russia, China) trade concessions, narratives, and grey-zone moves across the High North — all below the threshold of open conflict.</p>
+
+    <div class="landing-steps">
+      <div class="landing-step"><span class="landing-num">1</span><div><strong>Pick your role.</strong> Decision-Maker (breadth — act on the composite Cap Gap and Concession Engine) or Decision-Support (full depth toolkit — Cognitive Warfare, Narrative Analysis, Governance Lab, Capability Cards, Governance Analytics). Toggle it any time, top-left of the nav bar.</div></div>
+      <div class="landing-step"><span class="landing-num">2</span><div><strong>Set the scenario (optional).</strong> Tab 00, Scenario Input. Sharpens what the Agentic AI Red Team does each turn — skip it to use the default High North theatre.</div></div>
+      <div class="landing-step"><span class="landing-num">3</span><div><strong>Act.</strong> Trigger a concession (tab 03), run a Cognitive Warfare or Narrative analysis (tabs 04/06, Decision-Support only), or work the Contested Table when it opens.</div></div>
+      <div class="landing-step"><span class="landing-num">4</span><div><strong>Click "End Turn"</strong> in the header, any tab, any time. It advances the session and generates the adversary's next move under its active doctrine.</div></div>
+      <div class="landing-step"><span class="landing-num">5</span><div><strong>Watch the header.</strong> Turn, Cap Gap, active doctrine, and last AI move are live across every tab — that bar is the whole session state at a glance.</div></div>
+    </div>
+
+    <button class="btn btn-solid" style="padding:14px 32px;font-size:15px;" onclick="enterInstrument()">Enter Instrument →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="mainHeader" style="display:none;">
+  <div class="header-left">
+    <div class="header-mark">AW</div>
+    <div><div class="header-title">WinterStorm2030</div><div class="header-sub">E-IAIG-HT // NATO STO SAS-219 // v7.0</div></div>
+  </div>
+  <div class="session-bar" id="sessionBar">
+    <div class="session-stat"><span class="session-num" id="sb-turn">1</span><span class="session-lbl">Turn</span></div>
+    <div class="session-stat flare"><span class="session-num flare" id="sb-capgap">64%</span><span class="session-lbl">Cap Gap</span></div>
+    <div class="session-stat">
+      <span class="session-doctrine" id="sb-doctrine">🇷🇺 Narrative-First</span>
+      <span class="session-lbl">Active Doctrine</span>
+      <span class="session-lastmove" id="sb-lastmove"></span>
+    </div>
+    <div class="session-stat winwin" id="sb-winwin-wrap" style="display:none;"><span class="session-num winwin" id="sb-winwin">🌟</span><span class="session-lbl">Win-Win</span></div>
+    <div style="position:relative;">
+      <button class="end-turn-btn" id="endTurnBtn" onclick="endTurn()">⏩ End Turn</button>
+      <div id="endTurnCallout" class="end-turn-callout" style="display:none;">← Click here to begin Turn 2</div>
+    </div>
+    <button class="btn btn-ghost" style="border-color:var(--brass);color:var(--brass);" onclick="endGame()">🏁 End Game</button>
+  </div>
+  <div class="header-status"><div class="status-beacon"></div>System Operational</div>
+</div>
+
+<!-- WIN-WIN BANNER (cross-tab, appears above nav when conditions are met) -->
+<div class="winwin-banner" id="winwinBanner" style="display:none;">
+  <strong>🌟 WIN-WIN CONDITION DETECTED</strong> — <span id="winwinBannerText">Composite Cap Gap has fallen and a governance concession has been logged. A cooperative resolution is available on the Contested Table.</span>
+  <button class="winwin-dismiss" onclick="document.getElementById('winwinBanner').style.display='none';">✕</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav" style="display:none;">
+  <div class="mode-toggle" id="modeToggle">
+    <button class="mode-btn" id="modeBtnDM" onclick="setMode('dm')">◆ Decision-Maker</button>
+    <button class="mode-btn active" id="modeBtnDS" onclick="setMode('ds')">◇ Decision-Support</button>
+  </div>
+  <button class="nav-tab active" data-tab="scenario" data-tip="Set up the wargame: pick a scenario, your role, actors, adversarial vector, and intensity to begin the session." onclick="showTab('scenario',this)"><span class="nav-num">00</span>Scenario Input</button>
+  <button class="nav-tab" data-tab="overview" data-tip="Session-wide summary: composite NATO Cap Gap, Win-Win status, and the Navigation Guide to every tab." onclick="showTab('overview',this)"><span class="nav-num">01</span>Overview</button>
+  <button class="nav-tab" data-tab="actors" data-tip="Sovereignty and alliance-solidarity thresholds for each Blue Team actor — Norway, Denmark/Greenland, Finland, and more." onclick="showTab('actors',this)"><span class="nav-num">02</span>Actor Analysis</button>
+  <button class="nav-tab" data-tab="concession" data-tip="Log negotiated concessions between actors and open the Negotiation Table to resolve contested assets." onclick="showTab('concession',this)"><span class="nav-num">03</span>Concession Engine</button>
+  <button class="nav-tab ds-only" data-tab="cogwar" data-tip="Run narrative/disinformation analysis against the Intent, Autonomy, Interaction, and Governance dimensions (E-IAIG-HT). Decision-Support only." onclick="showTab('cogwar',this)"><span class="nav-num">04</span>Cognitive Warfare</button>
+  <button class="nav-tab" data-tab="capgap" data-tip="Live capability-deficit gauges across five domains: Infrastructure, Icebreakers, Command &amp; Comms, Undersea Surveillance, Nordic Burden Sharing." onclick="showTab('capgap',this)"><span class="nav-num">05</span>NATO Cap Gap</button>
+  <button class="nav-tab ds-only" data-tab="narrative" data-tip="Deeper disinformation and narrative-campaign assessment tools. Decision-Support only." onclick="showTab('narrative',this)"><span class="nav-num">06</span>Narrative Analysis</button>
+  <button class="nav-tab" data-tab="tracking" data-tip="Scenario clock, degradation log, and Decision Velocity — the real numbers behind the &quot;NATO acts faster&quot; claim." onclick="showTab('tracking',this)"><span class="nav-num">07</span>Live Tracking</button>
+  <button class="nav-tab ds-only" data-tab="govlab" data-tip="Score any treaty or policy document for Coverage against NATO 1949, grey-zone violations, precedent, and treaty architecture — with recommended fixes." onclick="showTab('govlab',this)"><span class="nav-num">08</span>Governance Lab</button>
+  <button class="nav-tab ds-only" data-tab="analytics" data-tip="PSTOA, Treaty Performance Metrics, the Evidence Ledger, and the NATO Treaty 1949 Shortcomings synopsis." onclick="showTab('analytics',this)"><span class="nav-num">09</span>Governance Analytics</button>
+  <button class="nav-tab ds-only" data-tab="capcards" data-tip="Capability → Own Action → Enemy Action → Countermeasures deliverables for GIUK Gap, Northern Sea Route, Svalbard, and Pipeline Sabotage." onclick="showTab('capcards',this)"><span class="nav-num">10</span>Capability Cards</button>
+  <button class="nav-tab" data-tab="osint" data-tip="Real OSINT event data (GDELT, no LLM call) — tag events as Article 4 evidence." onclick="showTab('osint',this)"><span class="nav-num">11</span>OSINT Feed</button>
+</nav>
+
+<!-- HERO MAP (Arctic coastline, shown on Overview/Scenario) -->
+<div class="chart-hero" id="chartHero" style="display:none;">
+  <svg class="chart-hero-map" viewBox="0 0 1400 440" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="navGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M0,0 L50,0 L50,50 L0,50 Z" fill="none" stroke="#1a3548" stroke-width="0.5"/>
+      </pattern>
+      <radialGradient id="oceanGrad" cx="50%" cy="40%" r="70%">
+        <stop offset="0%" stop-color="#0f2a38"/>
+        <stop offset="100%" stop-color="#0a1822"/>
+      </radialGradient>
+    </defs>
+    <rect width="1400" height="440" fill="url(#oceanGrad)"/>
+    <rect width="1400" height="440" fill="url(#navGrid)"/>
+    <!-- Greenland (left landmass) -->
+    <path d="M40,40 L140,20 L210,60 L240,140 L210,230 L160,280 L100,260 L60,200 L30,120 Z" fill="#16303e" stroke="#3a5568" stroke-width="1"/>
+    <!-- Svalbard -->
+    <path d="M620,30 L680,20 L710,55 L690,90 L640,85 L610,55 Z" fill="#16303e" stroke="#3a5568" stroke-width="1"/>
+    <!-- Norway coastline -->
+    <path d="M780,120 L820,90 L860,150 L840,230 L880,310 L850,400 L800,440 L760,360 L780,260 L750,180 Z" fill="#16303e" stroke="#3a5568" stroke-width="1"/>
+    <!-- Iceland -->
+    <path d="M380,200 L440,190 L470,230 L440,260 L390,255 L365,225 Z" fill="#16303e" stroke="#3a5568" stroke-width="1"/>
+    <!-- Sweden/Finland landmass -->
+    <path d="M900,80 L1000,60 L1080,130 L1060,250 L1000,340 L940,300 L920,200 Z" fill="#16303e" stroke="#3a5568" stroke-width="1"/>
+    <!-- GIUK gap shipping lane (dashed) -->
+    <path d="M250,180 C320,170 360,190 400,210" fill="none" stroke="#0ed7c4" stroke-width="1.5" stroke-dasharray="6,5" opacity="0.5" style="animation: dash-flow 4s linear infinite;"/>
+    <!-- contour lines -->
+    <g fill="none" stroke="#1a3548" stroke-width="1" opacity="0.6">
+      <path d="M0,340 C200,310 400,360 600,330 C800,300 1000,350 1400,320"/>
+      <path d="M0,390 C200,360 400,400 600,380 C800,360 1000,400 1400,370"/>
+    </g>
+  </svg>
+  <div class="chart-hero-sweep"></div>
+  <div class="chart-hero-overlay"></div>
+  <div class="position-marker" style="top:60px;left:120px;"><div class="position-dot critical"></div><div class="position-label critical">Greenland — Critical</div></div>
+  <div class="position-marker" style="top:32px;left:640px;"><div class="position-dot"></div><div class="position-label">Svalbard</div></div>
+  <div class="position-marker" style="top:200px;left:380px;"><div class="position-dot"></div><div class="position-label">Iceland</div></div>
+  <div class="position-marker" style="top:110px;left:800px;"><div class="position-dot"></div><div class="position-label">Norway</div></div>
+  <div class="position-marker" style="top:90px;left:950px;"><div class="position-dot"></div><div class="position-label adversarial">Nordic / NATO</div></div>
+  <div class="chart-hero-content">
+    <div class="chart-coordinates">78°13′N 15°38′E // High North Theatre // Winter Storm 2030</div>
+    <div class="chart-hero-title">Grey Zone<br>Governance Instrument</div>
+    <div class="chart-hero-sub">A live governance capacity working instrument for NATO STO SAS-219. Models the institutional seams adversaries exploit before allied response can coordinate — across the Arctic High North theatre.</div>
+  </div>
+</div>
+
+<div class="main" id="mainContent" style="display:none;">
+
+<!-- ══════════ SCENARIO INPUT ══════════ -->
+<div id="tab-scenario" class="tab-content active">
+  <div class="scenario-hero">
+    <h2>Build Your Scenario</h2>
+    <p>This is your game setup. Complete the four steps below — actors, adversarial vector, intensity, and concession position. Click <strong style="color:var(--beacon);">Generate Analysis</strong> to activate all live panels.</p>
+  </div>
+
+  <div class="scenario-step">
+    <div class="step-tag">Step 01 — Scenario Identity</div>
+    <div class="step-title">Name Your Scenario</div>
+    <div class="grid-2" style="background:none;gap:24px;">
+      <div style="background:none;">
+        <label class="field-label">Scenario Name</label>
+        <select id="scenarioName" class="input-field" style="margin-bottom:10px;" onchange="handleScenarioPreset()">
+          <option value="">— Select a scenario —</option>
+          <option value="Svalbard Article 9 Compliance Dispute">Svalbard Article 9 Compliance Dispute</option>
+          <option value="GIUK Gap Undersea Cable Interference">GIUK Gap Undersea Cable Interference</option>
+          <option value="Northern Sea Route Access Contestation">Northern Sea Route Access Contestation</option>
+          <option value="Arctic Pipeline Sabotage">Arctic Pipeline Sabotage</option>
+          <option value="Greenland Sovereignty Friction">Greenland Sovereignty Friction</option>
+          <option value="Bering Strait Grey-Zone Signal Jamming">Bering Strait Grey-Zone Signal Jamming</option>
+          <option value="Barents Sea Energy Coercion">Barents Sea Energy Coercion</option>
+          <option value="Svalbard Fibre Link EEZ Vessel Loitering">Svalbard Fibre Link EEZ Vessel Loitering</option>
+          <option value="Arctic Icebreaker Gap Exploitation">Arctic Icebreaker Gap Exploitation</option>
+          <option value="Compound Hybrid Arctic Pressure Campaign">Compound Hybrid Arctic Pressure Campaign</option>
+          <option value="__custom__">Custom — type your own below</option>
+        </select>
+        <input type="text" id="scenarioNameCustom" class="input-field" placeholder="Type your custom scenario name" style="display:none;margin-bottom:14px;" oninput="document.getElementById('scenarioName').dataset.customValue=this.value"/>
+        <label class="field-label">Scenario Description</label>
+        <textarea id="scenarioDesc" class="input-field" rows="3" placeholder="Describe the opening conditions and trigger event..."></textarea>
+      </div>
+      <div style="background:none;">
+        <label class="field-label">Role — You Are Playing As</label>
+        <select id="playerRole" class="input-field" style="margin-bottom:14px;">
+          <option value="blue-nato">Blue Team — NATO Coordination Cell</option>
+          <option value="blue-norway">Blue Team — Norway</option>
+          <option value="blue-denmark">Blue Team — Denmark/Greenland</option>
+          <option value="facilitator">Facilitator / Observer</option>
+        </select>
+        <label class="field-label">Asynchronous Play Mode</label>
+        <select id="playMode" class="input-field">
+          <option value="async-ai">Asynchronous — Human vs Adversarial Agentic AI</option>
+          <option value="async-human">Asynchronous — Human vs Human</option>
+          <option value="sync">Synchronous — Panel Session</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario-step">
+    <div class="step-tag">Step 02 — Adversarial Vector</div>
+    <div class="step-title">Select the Primary Adversarial Action</div>
+    <div class="action-tiles">
+      <div class="action-tile" id="tile-infra" onclick="selectAction('infra')" data-tip="Critical Infrastructure — undersea cables, energy links, or PNT (positioning/navigation/timing) systems are interfered with or sabotaged."><div class="tile-icon">⊙</div><div class="tile-label">Critical Infrastructure</div><div class="tile-sub">Cable // Energy // PNT</div></div>
+      <div class="action-tile" id="tile-disinfo" onclick="selectAction('disinfo')" data-tip="Disinformation Op — coordinated narrative campaign targeting alliance cohesion or public trust (IIC — Information Integrity Composite)."><div class="tile-icon">≈</div><div class="tile-label">Disinformation Op</div><div class="tile-sub">Narrative // IIC Vector</div></div>
+      <div class="action-tile" id="tile-auto" onclick="selectAction('auto')" data-tip="Autonomous Systems — unmanned vehicles (UxV) or autonomous sensing infrastructure (ASI) probe or contest a boundary/asset."><div class="tile-icon">▣</div><div class="tile-label">Autonomous Systems</div><div class="tile-sub">UxV // ASI Vector</div></div>
+      <div class="action-tile" id="tile-energy" onclick="selectAction('energy')" data-tip="Energy Coercion — gas, oil, or grid leverage used as pressure against a Blue Team actor's energy dependence."><div class="tile-icon">⚡</div><div class="tile-label">Energy Coercion</div><div class="tile-sub">Gas // Oil // Grid</div></div>
+      <div class="action-tile" id="tile-hybrid" onclick="selectAction('hybrid')" data-tip="Compound Hybrid — two or more vectors occur together (e.g. cyber probe + narrative push), designed to saturate Blue Team attention."><div class="tile-icon">⬡</div><div class="tile-label">Compound Hybrid</div><div class="tile-sub">Multi-Domain</div></div>
+      <div class="action-tile" id="tile-legal" onclick="selectAction('legal')" data-tip="Legal / Sovereignty — a grey-zone move that exploits treaty or legal ambiguity (e.g. Article 9, EEZ boundary) rather than a physical or cyber act."><div class="tile-icon">⚖</div><div class="tile-label">Legal / Sovereignty</div><div class="tile-sub">Grey Zone</div></div>
+    </div>
+  </div>
+
+  <div class="scenario-step">
+    <div class="step-tag">Step 03 — Actor Selection</div>
+    <div class="step-title">Toggle All Relevant Actors</div>
+    <div style="font-family:var(--font-m);font-size: 15px;color:var(--text-faint);margin-bottom:8px;text-transform:uppercase;">Blue Team</div>
+    <div class="actor-chips mb16">
+      <div class="actor-chip" id="chip-norway" onclick="toggleActor('norway')" data-tip="Norway — sovereignty over Svalbard, Longyearbyen viability, NATO's most exposed northern flank.">Norway</div>
+      <div class="actor-chip" id="chip-finland" onclick="toggleActor('finland')" data-tip="Finland — newest NATO member (2023), tests Article 5 solidarity as a High North frontline state.">Finland</div>
+      <div class="actor-chip" id="chip-sweden" onclick="toggleActor('sweden')" data-tip="Sweden — newest NATO member (2024), reactivating historically neutral defense posture.">Sweden</div>
+      <div class="actor-chip" id="chip-denmark" onclick="toggleActor('denmark')" data-tip="Denmark/Greenland — the scenario's sharpest seam: US adversarial framing plus Greenlandic sovereignty and Indigenous rights.">Denmark/Greenland</div>
+      <div class="actor-chip" id="chip-iceland" onclick="toggleActor('iceland')" data-tip="Iceland — no standing military, largest Capability Domain gap, high maskirovka vulnerability.">Iceland</div>
+      <div class="actor-chip" id="chip-canada" onclick="toggleActor('canada')" data-tip="Canada — Northwest Passage sovereignty, NORAD modernization, whole-of-continental approach per SAS-219's Way Forward.">Canada</div>
+    </div>
+    <div style="font-family:var(--font-m);font-size: 15px;color:var(--text-faint);margin-bottom:8px;text-transform:uppercase;">Red Team — Agentic AI</div>
+    <div class="actor-chips">
+      <div class="actor-chip red-team" id="chip-russia" onclick="toggleActor('russia')" data-tip="Russia — Narrative-First doctrine: reflexive control, below-threshold probing, deniable escalation.">Russia — Narrative-First</div>
+      <div class="actor-chip red-team" id="chip-china" onclick="toggleActor('china')" data-tip="China — Platform-First doctrine: dual-use infrastructure, data leverage, long-horizon economic access.">China — Platform-First</div>
+    </div>
+  </div>
+
+  <div class="scenario-step">
+    <div class="step-tag">Step 04 — Intensity & Opening Position</div>
+    <div class="step-title">Set Intensity and Concession Posture</div>
+    <div class="grid-2" style="background:none;gap:24px;">
+      <div style="background:none;">
+        <label class="field-label">Scenario Intensity</label>
+        <div class="intensity-row">
+          <div class="intensity-tile" id="int-low" onclick="selectIntensity('low')" data-tip="LOW — deniable activity, easily disputed attribution, minimal Cap Gap movement."><div class="i-label">LOW</div><div class="i-sub">Deniable</div></div>
+          <div class="intensity-tile selected" id="int-medium" onclick="selectIntensity('medium')" data-tip="MEDIUM — activity clearly below Article 4's plain threshold, but real and attributable."><div class="i-label">MEDIUM</div><div class="i-sub">Below Art.4</div></div>
+          <div class="intensity-tile" id="int-high" onclick="selectIntensity('high')" data-tip="HIGH — activity approaching what Article 4 language would plainly cover; consultation-worthy."><div class="i-label">HIGH</div><div class="i-sub">Approaching Art.4</div></div>
+          <div class="intensity-tile" id="int-critical" onclick="selectIntensity('critical')" data-tip="CRITICAL — direct threat to alliance cohesion; the scenario most likely to force a Contested Table deadlock."><div class="i-label">CRITICAL</div><div class="i-sub">Cohesion Threat</div></div>
+        </div>
+      </div>
+      <div style="background:none;">
+        <label class="field-label">Opening Concession Position</label>
+        <select id="openingConcession" class="input-field" style="margin-bottom:14px;">
+          <option value="none">No concession — Hold all positions</option>
+          <option value="access">Offer Access Concession</option>
+          <option value="resource">Offer Resource Concession</option>
+          <option value="narrative">Offer Narrative/Legal Concession</option>
+        </select>
+        <label class="field-label">Description</label>
+        <textarea id="openingDesc" class="input-field" rows="2" placeholder="Describe your opening position..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-row" style="margin-top:10px;">
+    <button class="btn btn-solid" onclick="generateScenario()">Generate Analysis</button>
+    <button class="btn btn-ghost" onclick="loadDemoScenario()">Load Demo Scenario</button>
+  </div>
+  <div id="scenarioReady" class="success-strip" style="display:none;">
+    <strong style="color:var(--beacon);">✓ SCENARIO ACTIVE.</strong> All analytical panels are live. The Concession Engine, Cognitive Warfare Module, and NATO Cap Gap tracker are now contextualised.
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);">
+      <strong style="color:var(--flare);">Next:</strong> click <strong>End Turn</strong> in the header (top right, any tab) to advance to Turn 2 and see the adversary's first move.
+      <button class="btn btn-beacon" style="margin-left:12px;" onclick="showTab('overview', document.querySelector('.nav-tab[onclick*=overview]')); document.getElementById('endTurnCallout').style.display='block';">Go to Overview →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OVERVIEW ══════════ -->
+<div id="tab-overview" class="tab-content">
+  <div class="section-title">Mission Overview <small>v3.3 // Grey Zone Instrument</small></div>
+  <div class="alert-strip"><strong>ACTIVE COGNITIVE PRESSURE</strong> — Russian narrative operations targeting Nordic alliance solidarity assessed HIGH. IIC gap: 20–46pts vs Nordic band. US–Greenland adversarial dynamic confirmed.</div>
+
+  <div class="grid-4 mb20">
+    <div class="readout"><div class="readout-label">Theatre</div><div class="readout-value" style="font-size: 29px;">High North</div><div class="readout-sub">Arctic / Barents / GIUK</div></div>
+    <div class="readout"><div class="readout-label">Framework</div><div class="readout-value" style="font-size: 29px;">E-IAIG-HT</div><div class="readout-sub">v3.3 + Concession Engine</div></div>
+    <div class="readout flare"><div class="readout-label">NATO Cap Gap</div><div class="readout-value flare" id="ov-capgap">64%</div><div class="readout-sub">Deficit vs requirement</div></div>
+    <div class="readout brass"><div class="readout-label">Active Concessions</div><div class="readout-value brass" id="ov-concessions">0</div><div class="readout-sub">Triggered this session</div></div>
+  </div>
+
+  <div class="grid-2 mb20">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Architecture — v3.3 Enhancements</div></div>
+      <div style="font-size: 18px;color:var(--text-dim);line-height:1.8;">
+        <div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:14px;"><span style="font-family:var(--font-d);color:var(--beacon);font-weight:700;min-width:24px;">01</span><div><strong style="color:var(--vellum);">Concession Engine</strong> — Access / Resource / Narrative-Legal, per-actor thresholds.</div></div>
+        <div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:14px;"><span style="font-family:var(--font-d);color:var(--flare);font-weight:700;min-width:24px;">02</span><div><strong style="color:var(--vellum);">Cognitive Warfare Module</strong> — Russian narrative-first + Chinese platform-first doctrines.</div></div>
+        <div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:14px;"><span style="font-family:var(--font-d);color:var(--brass);font-weight:700;min-width:24px;">03</span><div><strong style="color:var(--vellum);">NATO Cap Gap</strong> — Live dynamic variable, exports to Orion Lab.</div></div>
+        <div style="padding:10px 0;display:flex;gap:14px;"><span style="font-family:var(--font-d);color:var(--fathom-lt);font-weight:700;min-width:24px;">04</span><div><strong style="color:var(--vellum);">Contested Table</strong> — Deadlock trigger, AI scores Accept/Escalate/Exploit.</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Navigation Guide</div></div>
+      <table>
+        <tbody>
+          <tr><td><strong>00 Scenario Input</strong></td><td style="color:var(--text-dim);">Start here</td></tr>
+          <tr><td><strong>03 Concession Engine</strong></td><td style="color:var(--text-dim);">Trigger and track trades</td></tr>
+          <tr><td><strong>04 Cognitive Warfare</strong></td><td style="color:var(--text-dim);">Red Team doctrines, Blue response</td></tr>
+          <tr><td><strong>05 NATO Cap Gap</strong></td><td style="color:var(--text-dim);">Live capability deficit</td></tr>
+          <tr><td><strong>08 Governance Lab</strong></td><td style="color:var(--text-dim);">Treaty + document intelligence</td></tr>
+          <tr><td><strong>09 Governance Analytics</strong></td><td style="color:var(--text-dim);">PSTOA, treaty metrics, evidence ledger</td></tr>
+          <tr><td><strong>10 Capability Cards</strong></td><td style="color:var(--text-dim);">GIUK Gap / NSR / Svalbard deliverables</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel mb20" style="border-top:3px solid var(--flare);">
+    <div class="panel-head"><div class="panel-title">⚡ Agentic AI — Turn-by-Turn Red Team Moves</div><div class="panel-meta" id="aiMoveMeta">Awaiting Turn 1 → 2</div></div>
+    <div style="font-size: 16px;color:var(--text-faint);margin-bottom:12px;">Every <strong style="color:var(--vellum);">End Turn</strong> click generates one Red Team move under the currently active doctrine (header bar), scored against the live scenario and Cap Gap state.</div>
+    <div id="aiMoveLog"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No AI moves yet. Click "End Turn" in the header to generate Turn 2.</div></div>
+  </div>
+</div>
+
+<!-- ══════════ ACTORS ══════════ -->
+<div id="tab-actors" class="tab-content">
+  <div class="section-title">Actor Governance Intelligence <small>E-IAIG-HT Baselines</small></div>
+  <div class="panel bathy">
+    <div class="panel-head"><div class="panel-title">Arctic Theatre Baselines</div><div class="panel-meta">Panel Validation Invited</div></div>
+    <table>
+      <thead><tr><th>Actor</th><th>g-GWC</th><th>IIC</th><th>ASI</th><th>ESI</th><th>CD</th><th>Exposure</th><th>Concession</th><th>Primary Seam</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Finland</strong></td><td>75.6</td><td>76</td><td>68</td><td>72</td><td>64</td><td><span class="tag tag-brass">MEDIUM</span></td><td><span class="tag tag-beacon">STABLE</span></td><td style="color:var(--text-dim);font-size: 16px;">Article 5 commitment narratives</td></tr>
+        <tr><td><strong>Norway</strong></td><td>74.8</td><td>73</td><td>65</td><td>75</td><td>61</td><td><span class="tag tag-brass">MEDIUM</span></td><td><span class="tag tag-beacon">STABLE</span></td><td style="color:var(--text-dim);font-size: 16px;">Svalbard sovereignty</td></tr>
+        <tr><td><strong>Sweden</strong></td><td>73.0</td><td>74</td><td>64</td><td>71</td><td>60</td><td><span class="tag tag-brass">MEDIUM</span></td><td><span class="tag tag-beacon">STABLE</span></td><td style="color:var(--text-dim);font-size: 16px;">Neutrality reactivation</td></tr>
+        <tr><td><strong>Denmark/Greenland</strong></td><td>68.7</td><td>70</td><td>58</td><td>68</td><td>55</td><td><span class="tag tag-flare">HIGH</span></td><td><span class="tag tag-flare">CRITICAL ⚠</span></td><td style="color:var(--text-dim);font-size: 16px;">US adversarial framing</td></tr>
+        <tr><td><strong>Iceland</strong></td><td>59.3</td><td>42</td><td>56</td><td>58</td><td>38</td><td><span class="tag tag-flare">CRITICAL</span></td><td><span class="tag tag-brass">VULNERABLE</span></td><td style="color:var(--text-dim);font-size: 16px;">CD gap −44pts vs Russia</td></tr>
+        <tr style="background:rgba(226,80,62,0.06);"><td><strong style="color:var(--flare);">Russia</strong></td><td style="color:var(--flare);">80.2</td><td style="color:var(--flare);">88</td><td>74</td><td>80</td><td style="color:var(--flare);">82</td><td><span class="tag tag-flare">ADVERSARIAL</span></td><td><span class="tag tag-flare">RED TEAM</span></td><td style="color:var(--text-dim);font-size: 16px;">Narrative-first doctrine</td></tr>
+        <tr style="background:rgba(212,168,67,0.06);"><td><strong style="color:var(--brass);">China</strong></td><td style="color:var(--brass);">76.8</td><td>72</td><td>78</td><td style="color:var(--brass);">85</td><td>70</td><td><span class="tag tag-brass">ADVERSARIAL</span></td><td><span class="tag tag-brass">RED TEAM</span></td><td style="color:var(--text-dim);font-size: 16px;">Platform-first doctrine</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════ CONCESSION ENGINE ══════════ -->
+<div id="tab-concession" class="tab-content">
+  <div class="section-title">Concession Engine <small>Three Types // Actor Thresholds</small></div>
+  <div class="info-strip"><strong>CONCESSION ENGINE</strong> — Core decision mechanism. When a threshold breaches with no movement &gt;3 turns, the Contested Table activates automatically.</div>
+  <div class="info-strip" style="border-left-color:var(--beacon);"><strong>v3.4 — LIVE SESSION LINK</strong> — Triggering a concession advances the session turn, and Access/Resource/Narrative-Legal concessions each move the shared Cap Gap composite by a different weight. A Blue Narrative-Legal concession (e.g. a treaty offer) is what the Win-Win detector looks for.</div>
+
+  <div class="grid-3 mb20">
+    <div class="concession-card tilt-card" id="card-access" onclick="selectConcType('access')">
+      <div class="concession-mark">Type 01</div>
+      <div class="concession-name access">Access</div>
+      <div class="concession-desc">Basing rights, ISR infrastructure, port access, airfield use, domain awareness.</div>
+      <div><span class="tag tag-beacon">Basing</span> <span class="tag tag-beacon">ISR</span> <span class="tag tag-beacon">Ports</span></div>
+    </div>
+    <div class="concession-card tilt-card" id="card-resource" onclick="selectConcType('resource')">
+      <div class="concession-mark">Type 02</div>
+      <div class="concession-name resource">Resource</div>
+      <div class="concession-desc">Critical minerals, energy, Polar Connect subsea cables, Arctic shipping routes.</div>
+      <div><span class="tag tag-brass">Minerals</span> <span class="tag tag-brass">Energy</span> <span class="tag tag-brass">Cables</span></div>
+    </div>
+    <div class="concession-card tilt-card" id="card-narrative" onclick="selectConcType('narrative')">
+      <div class="concession-mark">Type 03</div>
+      <div class="concession-name narrative">Narrative / Legal</div>
+      <div class="concession-desc">Sovereignty recognition, consultation rights, Indigenous safeguards, treaty preservation.</div>
+      <div><span class="tag tag-violet">Sovereignty</span> <span class="tag tag-violet">Treaties</span> <span class="tag tag-violet">CAOFA</span></div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb20">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Trigger a Concession</div></div>
+      <label class="field-label">Triggering Actor</label>
+      <select id="triggerActor" class="input-field" style="margin-bottom:12px;">
+        <option value="norway">Norway</option><option value="denmark">Denmark/Greenland</option>
+        <option value="finland">Finland</option><option value="iceland">Iceland</option>
+        <option value="canada">Canada</option>
+        <option value="us">United States</option><option value="russia">Russia (Red)</option><option value="china">China (Red)</option>
+      </select>
+      <label class="field-label">Concession Type</label>
+      <select id="triggerType" class="input-field" style="margin-bottom:12px;">
+        <option value="access">Access</option><option value="resource">Resource</option><option value="narrative">Narrative/Legal</option>
+      </select>
+      <label class="field-label">Description</label>
+      <textarea id="triggerDesc" class="input-field" rows="3" placeholder="Describe the concession..." style="margin-bottom:14px;"></textarea>
+      <div class="flex-row"><button class="btn btn-beacon" onclick="triggerConcession()">Trigger Concession</button><button class="btn btn-flare" onclick="openContested()">Open Negotiation Table</button></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Actor Concession Thresholds</div></div>
+      <div id="actorThresholds"></div>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-head"><div class="panel-title">Concession Decision Log</div></div><div id="concessionLog"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No concessions triggered yet.</div></div></div>
+</div>
+
+<!-- ══════════ COGNITIVE WARFARE ══════════ -->
+<div id="tab-cogwar" class="tab-content">
+  <div class="section-title" style="border-left-color:var(--flare);">Cognitive Warfare Module <small>Integrated // Two Red Team Doctrines</small></div>
+  <div class="info-strip"><strong>MODULE INTEGRATION</strong> — Disinformation is purposeful weaponization of non-factual content amplified by information illiteracy (Dr. L. Doc Alessa, Oxford June 2026).</div>
+  <div class="info-strip" style="border-left-color:var(--beacon);"><strong>v3.4 — LIVE SESSION LINK</strong> — Running an analysis here sets the active adversary doctrine shown in the header bar, feeds the returned governance-pressure score into the shared NATO Cap Gap composite (tab 05), and advances the session turn counter.</div>
+
+  <div class="grid-2 mb20">
+    <div class="doctrine-card rus">
+      <div class="doctrine-title rus">Russia — Narrative-First</div>
+      <div style="font-size: 18px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">Reflexive control, maskirovka, AI-generated localized disinformation. Objective: fracture Nordic alliance solidarity.</div>
+      <div class="action-row"><span>Svalbard sovereignty ambiguity injection</span><span class="tag tag-flare">IIC</span></div>
+      <div class="action-row"><span>AI-generated Article 5 doubt narrative</span><span class="tag tag-flare">CD</span></div>
+      <div class="action-row"><span>US-NATO friction amplification — Greenland</span><span class="tag tag-flare">SAD</span></div>
+      <div class="action-row"><span>GRU maskirovka — below-threshold event</span><span class="tag tag-flare">HYBRID</span></div>
+    </div>
+    <div class="doctrine-card prc">
+      <div class="doctrine-title prc">China — Platform-First</div>
+      <div style="font-size: 18px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">Dual-use surveillance infrastructure, AI-enabled influence ops at scale. "Near-Arctic state" legitimacy narrative.</div>
+      <div class="action-row"><span>Dual-use research station / satellite activation</span><span class="tag tag-brass">STI</span></div>
+      <div class="action-row"><span>Polar Connect cable jurisdiction challenge</span><span class="tag tag-brass">ESI</span></div>
+      <div class="action-row"><span>CAOFA scientific cooperation leverage</span><span class="tag tag-brass">NARR</span></div>
+      <div class="action-row"><span>AI influence ops — Greenlandic independence</span><span class="tag tag-brass">CD</span></div>
+    </div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">⚡ Live Cognitive Warfare Engine</div></div>
+    <select id="cogDoctrineSelect" class="input-field" style="margin-bottom:12px;">
+      <option value="rus">Russia — Narrative-First</option><option value="prc">China — Platform-First</option><option value="hybrid">Compound Hybrid</option>
+    </select>
+    <textarea id="cogNarrativeInput" class="input-field" rows="4" placeholder="Paste adversarial narrative for IAIG scoring..." style="margin-bottom:14px;"></textarea>
+    <button class="btn btn-flare" onclick="runCogAnalysis()">Analyse — IAIG Engine</button>
+    <div id="cogWarfareOutput" style="display:none;margin-top:20px;">
+      <div class="gauge-wrap"><div class="gauge-label"><span>Intent</span><span class="val" id="cog-intent-val">—</span></div><div class="gauge-track"><div class="gauge-fill flare" id="cog-intent-bar" style="width:0%"></div></div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>Autonomy</span><span class="val" id="cog-auto-val">—</span></div><div class="gauge-track"><div class="gauge-fill flare" id="cog-auto-bar" style="width:0%"></div></div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>Interaction</span><span class="val" id="cog-inter-val">—</span></div><div class="gauge-track"><div class="gauge-fill brass" id="cog-inter-bar" style="width:0%"></div></div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>Governance</span><span class="val" id="cog-gov-val">—</span></div><div class="gauge-track"><div class="gauge-fill" id="cog-gov-bar" style="width:0%"></div></div></div>
+      <div id="cogWarfareText" style="font-size: 18px;color:var(--text-dim);padding:16px;background:var(--ink2);border-left:2px solid var(--beacon);margin-top:14px;line-height:1.7;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NATO CAP GAP ══════════ -->
+<div id="tab-capgap" class="tab-content">
+  <div class="section-title" style="border-left-color:var(--brass);">NATO Capability Gap <small>Live Variable // Orion Lab Export</small></div>
+  <div class="info-strip"><strong>DYNAMIC VARIABLE</strong> — Changes in real time. Exports to Orion Lab (Python) via JSON.</div>
+  <div class="info-strip" style="border-left-color:var(--beacon);"><strong>v3.4 — COMPOSITE FORMULA</strong> — Overall Cap Gap = average of the five domains below, adjusted by a Concession Modifier (tab 03) and a Narrative Pressure Modifier (tabs 04/06). Every tab writes to the same number; nothing here is isolated.</div>
+
+  <div class="panel mb20 bathy">
+    <div class="flex-between mb16"><div class="panel-title">Overall Capability Gap</div><div style="text-align:right;"><div class="readout-value flare" id="master-gap-val" style="font-size: 37px;">64%</div></div></div>
+    <div class="gauge-track" style="height:8px;"><div class="gauge-fill flare" id="master-gap-bar" style="width:64%"></div></div>
+    <div class="gauge-ticks"><span>0% Full Capability</span><span>50% Critical</span><span>100% Total Gap</span></div>
+  </div>
+
+  <div class="grid-2 mb20">
+    <div class="panel bathy"><div class="panel-head"><div class="panel-title">Five Capability Domains</div></div><div id="capDomains"></div></div>
+    <div class="panel ds-depth">
+      <div class="panel-head"><div class="panel-title">Gap Adjustment</div></div>
+      <label class="field-label">Domain</label>
+      <select id="gapDomainSelect" class="input-field" style="margin-bottom:12px;">
+        <option value="0">Infrastructure & Stockpiles</option><option value="1">Industrial Capacity (Icebreakers)</option>
+        <option value="2">Command & Communications</option><option value="3">Undersea Surveillance</option><option value="4">Nordic Burden Sharing</option>
+      </select>
+      <label class="field-label">Type</label>
+      <select id="gapAdjType" class="input-field" style="margin-bottom:12px;">
+        <option value="blue">Blue — Close Gap</option><option value="red">Red — Widen Gap</option><option value="hybrid">Hybrid Event</option>
+      </select>
+      <label class="field-label">Delta</label>
+      <select id="gapDelta" class="input-field" style="margin-bottom:16px;">
+        <option value="3">Minor (±3%)</option><option value="7">Significant (±7%)</option><option value="12">Major (±12%)</option><option value="18">Critical (±18%)</option>
+      </select>
+      <div class="flex-row"><button class="btn btn-beacon" onclick="adjustGap()">Apply Adjustment</button><button class="btn btn-ghost" onclick="exportOrion()">Export to Orion Lab</button></div>
+      <div id="gapFeedback" style="margin-top:14px;font-size: 17px;font-family:var(--font-m);display:none;"></div>
+    </div>
+    <div class="panel dm-brief">
+      <div class="panel-head"><div class="panel-title">Advisory Brief</div></div>
+      <div style="font-size: 16px;color:var(--text-dim);line-height:1.6;">Domain-level adjustment is Decision-Support depth tooling. As Decision-Maker, use the composite Cap Gap above and the Concession Engine to act — switch to Decision-Support mode to see per-domain analysis behind that number.</div>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-head"><div class="panel-title">Gap Event Log</div></div><div id="gapEventLog"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No gap events logged yet.</div></div></div>
+</div>
+
+<!-- ══════════ NARRATIVE ANALYSIS ══════════ -->
+<div id="tab-narrative" class="tab-content">
+  <div class="section-title" style="border-left-color:var(--violet);">Narrative Analysis Engine <small>Live IAIG // Anthropic API</small></div>
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">⚡ Live Narrative Input</div></div>
+    <div class="flex-row mb16">
+      <button class="btn btn-ghost" style="font-size: 15px;padding:8px 14px;" onclick="setEx('svalbard')">Svalbard Cable</button>
+      <button class="btn btn-ghost" style="font-size: 15px;padding:8px 14px;" onclick="setEx('article5')">Article 5 Doubt</button>
+      <button class="btn btn-ghost" style="font-size: 15px;padding:8px 14px;" onclick="setEx('greenland')">Greenland Sovereignty</button>
+    </div>
+    <textarea id="narrativeInput" class="input-field" rows="5" placeholder="Paste adversarial narrative..." style="margin-bottom:14px;"></textarea>
+    <button class="btn btn-flare" onclick="analyseNarrative()">Analyse — IAIG Engine</button>
+  </div>
+  <div id="narrativeOutput" style="display:none;">
+    <div class="grid-4 mb20">
+      <div class="readout"><div class="readout-label">Intent</div><div id="narr-intent" class="readout-value flare" style="font-size: 31px;">—</div></div>
+      <div class="readout"><div class="readout-label">Autonomy</div><div id="narr-auto" class="readout-value brass" style="font-size: 31px;">—</div></div>
+      <div class="readout"><div class="readout-label">Interaction</div><div id="narr-inter" class="readout-value brass" style="font-size: 31px;">—</div></div>
+      <div class="readout"><div class="readout-label">Governance</div><div id="narr-gov" class="readout-value flare" style="font-size: 31px;">—</div></div>
+    </div>
+    <div class="panel">
+      <div id="narrativeText" style="font-size: 18px;color:var(--text-dim);line-height:1.8;margin-bottom:16px;"></div>
+      <div style="border-top:1px solid var(--line2);padding-top:16px;">
+        <div style="font-family:var(--font-m);font-size: 13px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Foresight Recommendation</div>
+        <div id="narrativeForesight" style="font-size: 18px;color:var(--text-dim);line-height:1.7;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LIVE TRACKING ══════════ -->
+<div id="tab-tracking" class="tab-content">
+  <div class="section-title">Dynamic Governance Tracking <small>Bayesian // Kalman Filter</small></div>
+  <div class="grid-2 mb20">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Scenario Clock</div></div>
+      <div style="font-family:var(--font-d);font-size: 58px;font-weight:700;color:var(--beacon);letter-spacing:4px;text-align:center;padding:24px 0;" id="scenarioClock">T+00:00</div>
+      <div class="flex-row" style="justify-content:center;"><button class="btn btn-beacon" onclick="startClock()">Run Scenario</button><button class="btn btn-flare" onclick="stopClock()">Stop</button><button class="btn btn-ghost" onclick="resetClock()">Reset</button></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Live Governance State</div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>IIC — Nordic Composite</span><span class="val" id="live-iic">63/100</span></div><div class="gauge-track"><div class="gauge-fill" id="live-iic-bar" style="width:63%"></div></div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>CD — Cognitive Domain</span><span class="val" id="live-cd">56/100</span></div><div class="gauge-track"><div class="gauge-fill brass" id="live-cd-bar" style="width:56%"></div></div></div>
+      <div class="gauge-wrap"><div class="gauge-label"><span>NATO Cap Gap</span><span class="val" id="live-capgap">64%</span></div><div class="gauge-track"><div class="gauge-fill flare" id="live-capgap-bar" style="width:64%"></div></div></div>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-head"><div class="panel-title">Degradation Log</div></div><div id="trackingLog"><div style="font-family:var(--font-m);font-size: 16px;color:var(--text-faint);text-align:center;padding:20px;">// TRACKING ENGINE READY // CLICK RUN SCENARIO</div></div></div>
+
+  <div class="panel mb20" id="decisionVelocityPanel" style="margin-top:20px;">
+    <div class="panel-head"><div class="panel-title">Decision Velocity</div></div>
+    <div style="font-size: 15px;color:var(--text-faint);margin-bottom:14px;">Supports the "WinterStorm2030 helps NATO act faster" positioning with a real number instead of an assertion — derived from actual timestamps in this session's own action log, not simulated.</div>
+    <div class="grid-3">
+      <div class="readout"><div class="readout-label">Avg. Response to AI Moves</div><div class="readout-value" style="font-size: 29px;" id="dvResponse">—</div><div class="readout-sub">Time from an Agentic AI move to the next human-initiated action</div></div>
+      <div class="readout"><div class="readout-label">Avg. Session Tempo</div><div class="readout-value" style="font-size: 29px;" id="dvTempo">—</div><div class="readout-sub">Average gap between any two consecutive logged actions</div></div>
+      <div class="readout"><div class="readout-label">Responses Measured</div><div class="readout-value" style="font-size: 29px;" id="dvCount">0 of 0</div><div class="readout-sub">Response pairs vs. total logged actions</div></div>
+    </div>
+    <div id="dvNote" style="font-size: 14px;color:var(--text-faint);margin-top:12px;">Needs a few more Agentic AI moves and human responses this session before these numbers are meaningful — generate a Red Team move (End Turn), then trigger a concession, tag an Article 4 event, or score a Governance Lab document to populate this.</div>
+  </div>
+</div>
+
+<!-- ══════════ GOVERNANCE LAB ══════════ -->
+<div id="tab-govlab" class="tab-content">
+  <div class="section-title">Governance Lab <small>Document Scoring — E-IAIG-HT Lexical Coverage</small></div>
+  <div class="info-strip"><strong>PURPOSE</strong> — Translate abstract policies, treaties, and legal documents into actionable workflows and governance outcomes: paste or drop a document for an indicative Coverage Score against the North Atlantic Treaty's 14 Articles, the grey-zone violation taxonomy, the Precedent Library, and the Treaty Architecture for Critical Maritime Infrastructure — then follow the Actionable Next Steps below the score straight into the relevant workflow (Article 4 tagging, the Negotiation Table, Governance Analytics). Scored documents post directly into the Governance Analytics Evidence Ledger — that's the tie between the two tabs.</div>
+  <div class="info-strip" style="border-left-color:var(--brass);"><strong>SCOPE</strong> — Heuristic keyword/overlap scoring, not a legal or AI judgment. Runs entirely in your browser — nothing is sent anywhere. This static build has no live GDELT connection and doesn't cross-reference tagged OSINT events the way the Streamlit build does; a live-query field is included for parity but always scores as cached, not live.</div>
+
+  <div class="panel mb20">
+    <div id="govlabDropzone" style="border:1px dashed var(--line2);padding:28px;text-align:center;cursor:pointer;transition:border-color .15s;" onclick="document.getElementById('docUpload').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--beacon)';" ondragleave="this.style.borderColor='var(--line2)';" ondrop="handleDocDrop(event)">
+      <div style="font-family:var(--font-d);font-size: 18px;color:var(--beacon);margin-bottom:6px;">Drop a .txt, .pdf, or .docx File Here — or Click to Browse</div>
+      <div style="font-family:var(--font-m);font-size: 14px;color:var(--text-faint);letter-spacing:1px;">ALL THREE READ DIRECTLY INTO THE BOX BELOW — SCANNED/PRINTED PDFS WITH NO TEXT LAYER FALL BACK TO IN-BROWSER OCR — NOTHING UPLOADED</div>
+    </div>
+    <input type="file" id="docUpload" style="display:none;" accept=".txt,.pdf,.docx" onchange="handleDocSelect(event)"/>
+    <div class="mb16" style="margin-top:16px;"><label class="field-label">Document title</label><input type="text" id="govlabTitle" class="input-field" placeholder="e.g. North Atlantic Treaty (1949)"/></div>
+    <div class="mb16"><label class="field-label">Document text</label><textarea id="govlabText" class="input-field" style="min-height:130px;resize:vertical;" placeholder="Paste document text here — scoring runs against this."></textarea></div>
+    <div class="grid-2 mb16">
+      <div><label class="field-label">Live event context (optional)</label><input type="text" id="govlabLiveQuery" class="input-field" placeholder="e.g. Svalbard vessel activity"/></div>
+      <div style="display:flex;align-items:flex-end;gap:10px;"><button class="btn btn-beacon" style="width:100%;" onclick="scoreGovlabDocument()">Score Document</button><button class="btn btn-ghost" onclick="resetGovlabForm()" data-tip="Clear the form and start a new assessment">↺ Reset</button></div>
+    </div>
+    <div id="govlabUploadFeedback" style="font-size: 15px;margin-top:10px;display:none;"></div>
+  </div>
+
+  <div id="govlabScoreResult" style="display:none;"></div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Scored Documents Log</div><div class="panel-meta" id="govlabLogCount">0 scored this session</div></div>
+    <div id="govlabScoreLog" style="display:grid;gap:1px;background:var(--line2);"><div style="background:var(--panel);padding:18px;color:var(--text-faint);font-size:15px;text-align:center;">No documents scored yet this session.</div></div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Reference Library</div><div class="panel-meta">What the score above checks documents against</div></div>
+    <details style="margin-bottom:10px;"><summary style="cursor:pointer;color:var(--beacon);font-family:var(--font-m);font-size:14px;letter-spacing:.5px;padding:8px 0;">North Atlantic Treaty (1949) — all 14 Articles</summary>
+      <table><thead><tr><th>Article</th><th>Summary</th><th>Strength</th><th>Recommended Fix</th></tr></thead><tbody id="refArticlesBody"></tbody></table>
+    </details>
+    <details style="margin-bottom:10px;"><summary style="cursor:pointer;color:var(--beacon);font-family:var(--font-m);font-size:14px;letter-spacing:.5px;padding:8px 0;">Precedent Library — grey-zone infrastructure &amp; boundary dispute analogues</summary>
+      <table><thead><tr><th>Treaty</th><th>Infrastructure Focus</th></tr></thead><tbody id="refPrecedentBody"></tbody></table>
+    </details>
+    <details><summary style="cursor:pointer;color:var(--beacon);font-family:var(--font-m);font-size:14px;letter-spacing:.5px;padding:8px 0;">Treaty Architecture for Critical Maritime Infrastructure</summary>
+      <table><thead><tr><th>Provision</th><th>Summary</th></tr></thead><tbody id="refArchBody"></tbody></table>
+    </details>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Knowledge Base</div><div class="panel-meta" id="govlabDocCount">3 integrated · 0 scored this session</div></div>
+    <div id="govlabKnowledgeBase" style="display:grid;gap:1px;background:var(--line2);">
+      <div style="background:var(--panel);padding:18px;">
+        <div class="flex-between mb8"><div><span class="tag tag-beacon">Treaty // 1920</span> <strong style="font-family:var(--font-d);font-size: 19px;margin-left:10px;color:var(--vellum);">Svalbard Treaty</strong></div><span class="tag tag-beacon">INTEGRATED</span></div>
+        <div style="font-size: 18px;color:var(--text-dim);line-height:1.6;">Norway sovereignty + 46-state access rights including Russia. Article 9 demilitarisation creates governance ambiguity.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="flex-between mb8"><div><span class="tag tag-brass">Treaty // 2021</span> <strong style="font-family:var(--font-d);font-size: 19px;margin-left:10px;color:var(--vellum);">CAOFA</strong></div><span class="tag tag-beacon">INTEGRATED</span></div>
+        <div style="font-size: 18px;color:var(--text-dim);line-height:1.6;">5 years in force. Russia, China, US all participating. Model for narrowly scoped multilateral governance.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="flex-between mb8"><div><span class="tag tag-flare">Institution // 2025</span> <strong style="font-family:var(--font-d);font-size: 19px;margin-left:10px;color:var(--vellum);">NATO Mainsail / CMRE</strong></div><span class="tag tag-beacon">INTEGRATED</span></div>
+        <div style="font-size: 18px;color:var(--text-dim);line-height:1.6;">AI-enabled maritime domain awareness. Flags anomalous vessel trajectories near undersea infrastructure. Informs the Undersea Surveillance capability domain.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CAPABILITY CARDS (v4.0 sync) ══════════ -->
+<div id="tab-capcards" class="tab-content">
+  <div class="section-title">Capability Cards <small>GIUK Gap / NSR / Svalbard — Disruptive Capabilities Deliverable</small></div>
+  <div class="info-strip"><strong>FORMAT</strong> — Capability Domain → Own Action (Blue) → Enemy Action (Red) → Countermeasures, for the three confirmed Red Team scenarios. Own/Enemy Action text is hand-authored; domain gap % and the illustrative AI move pull from this session's live state in the Streamlit build.</div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">GIUK Gap — Undersea Surveillance Corridor</div><span class="tag tag-flare">Undersea Surveillance · 58% gap</span></div>
+    <div style="display:grid;gap:1px;background:var(--line2);">
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-beacon">Own Action — Blue</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">NATO ASW patrol cadence, UK/Norway maritime patrol aircraft coordination, undersea sensor network monitoring.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-flare">Enemy Action — Red</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Below-threshold submarine transit or GRU-linked signal interference near the gap, timed to sit under attribution and consultation thresholds.</div>
+        <div style="font-size: 15px;color:var(--text-faint);font-style:italic;margin-top:8px;">Illustrative Agentic AI move under Russian doctrine: [SIGNAL] Undersea cable proximity transit — unattributed vessel loiters near the GIUK corridor.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-brass">Countermeasures</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Increase patrol cadence and joint ISR sharing; if a specific incident is attributable, open an Arbitration Track case; invest in the Undersea Surveillance capability domain.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Northern Sea Route — Arctic Shipping Corridor</div><span class="tag tag-brass">Industrial Capacity (Icebreakers) · 71% gap</span></div>
+    <div style="display:grid;gap:1px;background:var(--line2);">
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-beacon">Own Action — Blue</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">ICE Pact icebreaker development (US/Canada/Finland), Coast Guard Arctic Security Cutter fielding, joint Nordic-NATO presence patrols.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-flare">Enemy Action — Red</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Chinese research-vessel presence in outer continental shelf areas; Russian LNG export route militarization and infrastructure expansion along the route.</div>
+        <div style="font-size: 15px;color:var(--text-faint);font-style:italic;margin-top:8px;">Illustrative Agentic AI move under Russian doctrine: [ROUTE] LNG corridor infrastructure expansion framed as commercial development.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-brass">Countermeasures</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Joint NATO-Nordic icebreaker presence; enforce CAOFA-style access moratoria; escalate to the Arbitration Track against the Northern Sea Route Corridor asset if access is contested.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Svalbard — Treaty Article 9 Demilitarization Zone</div><span class="tag tag-beacon">Command &amp; Communications · 49% gap</span></div>
+    <div style="display:grid;gap:1px;background:var(--line2);">
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-beacon">Own Action — Blue</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Norwegian sovereignty enforcement short of militarization; allied ISR monitoring; joint Nordic attribution statements when incidents occur.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-flare">Enemy Action — Red</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">GRU-linked below-threshold vessel activity in the Svalbard EEZ; disinformation questioning Norway's Article 9 compliance to justify further presence.</div>
+        <div style="font-size: 15px;color:var(--text-faint);font-style:italic;margin-top:8px;">Illustrative Agentic AI move under Russian doctrine: [EEZ] Vessel loitering near the Svalbard Fibre Link, paired with a compliance-doubt narrative push.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-brass">Countermeasures</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Run a Narrative Analysis to assess disinformation intent; escalate via the Arbitration Track (Svalbard Treaty Article 9 dispute is already modeled there); joint Nordic attribution statement.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Arctic Pipeline — Sabotage &amp; Tampering</div><span class="tag tag-flare">Critical Infrastructure · 66% gap</span></div>
+    <div style="display:grid;gap:1px;background:var(--line2);">
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-beacon">Own Action — Blue</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Subsea/pipeline monitoring sensors on the Arctic Pipeline Segment; NATO Mainsail/CMRE AI-enabled maritime domain awareness flags anomalous vessel trajectories near the corridor; joint rapid-response repair and containment protocols.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-flare">Enemy Action — Red</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Deniable tampering with pipeline or control-system infrastructure — anchor-drag, valve interference, or coercive maintenance disruption — timed to sit below the threshold that would trigger consultation, and framed as accident rather than attack.</div>
+        <div style="font-size: 15px;color:var(--text-faint);font-style:italic;margin-top:8px;">Illustrative Agentic AI move under Russian doctrine: [INFRA] Arctic LNG/oil pipeline interference, deniable and attributed to mechanical failure.</div>
+      </div>
+      <div style="background:var(--panel);padding:18px;">
+        <div class="mb8"><span class="tag tag-brass">Countermeasures</span></div>
+        <div style="font-size: 17px;color:var(--text-dim);line-height:1.6;">Tag as a "Tampering with Infrastructure or Control Systems" grey-zone violation and open an Arbitration Track case against the Arctic Pipeline Segment; cross-reference the Energy Charter Treaty's expedited transit-conciliation mechanics in the Precedent Library; invest in the Critical Infrastructure capability domain.</div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size: 14px;color:var(--text-faint);text-align:center;">Markdown export per card is available in the Streamlit build — not reproduced here.</div>
+</div>
+
+<!-- ══════════ GOVERNANCE ANALYTICS (v5.0 sync) ══════════ -->
+<div id="tab-analytics" class="tab-content">
+  <div class="section-title">Governance Analytics <small>PSTOA // Treaty Performance // Evidence Ledger</small></div>
+  <div class="info-strip"><strong>PURPOSE</strong> — Session-wide reporting: WinterStorm2030's Policy Stress-Test Outcome Assessment, treaty performance metrics modeled on Annex C of the Treaty Architecture document, and a single auditable evidence table. All computed from this session's own data, not asserted.</div>
+
+  <div class="panel mb20" style="border-top:3px solid var(--brass);">
+    <div class="panel-head"><div class="panel-title">NATO Treaty 1949 Shortcomings</div><div class="panel-meta">Evidence + recommended changes, by Article</div></div>
+    <div style="font-size: 15px;color:var(--text-faint);margin-bottom:14px;">Click <strong style="color:var(--brass);">🏁 End Game</strong> in the header, or the button below, to generate this synopsis: which Articles fall short, what this session's own log demonstrates, and what to change — the same recommended-fix logic Governance Lab uses for any document, applied here to the Treaty itself.</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;"><button class="btn btn-beacon" onclick="showShortcomingsReport()">Show NATO Treaty 1949 Shortcomings</button><button class="btn btn-ghost" id="shortcomingsExportBtn" style="display:none;" onclick="exportShortcomingsReport()">⬇ Export Synopsis (Markdown)</button></div>
+    <div id="shortcomingsReport"></div>
+  </div>
+
+  <div class="grid-2 mb20">
+    <div class="panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div class="panel-head" style="width:100%;"><div class="panel-title">PSTOA Overall Score</div></div>
+      <div style="font-family:var(--font-d);font-size: 58px;font-weight:700;color:var(--brass);text-align:center;padding:10px 0;">58</div>
+      <div style="font-size: 15px;color:var(--brass);letter-spacing:1px;margin-bottom:10px;">/ 100 &nbsp;·&nbsp; PARTIALLY EFFECTIVE</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">PSTOA Dimensions</div></div>
+      <div style="display:grid;gap:1px;background:var(--line2);">
+        <div style="background:var(--panel);padding:14px 18px;"><div class="flex-between"><strong style="color:var(--vellum);font-size: 17px;">Multilateralism</strong><span class="tag tag-brass">40%</span></div><div style="font-size: 15px;color:var(--text-faint);margin-top:4px;">Coalition: 4 of 10 Blue actors have signed a Narrative-Legal concession.</div></div>
+        <div style="background:var(--panel);padding:14px 18px;"><div class="flex-between"><strong style="color:var(--vellum);font-size: 17px;">Stress Test Effectiveness</strong><span class="tag tag-brass">45/100</span></div><div style="font-size: 15px;color:var(--text-faint);margin-top:4px;">Cap Gap currently 64% against the 75% loss threshold — session ongoing.</div></div>
+        <div style="background:var(--panel);padding:14px 18px;"><div class="flex-between"><strong style="color:var(--vellum);font-size: 17px;">Process Acceleration</strong><span class="tag tag-beacon">FAST</span></div><div style="font-size: 15px;color:var(--text-faint);margin-top:4px;">Average response time to Red Team moves under 5 minutes (self-defined pacing bands, not an externally validated baseline).</div></div>
+        <div style="background:var(--panel);padding:14px 18px;"><div class="flex-between"><strong style="color:var(--vellum);font-size: 17px;">Foresight Sustainability</strong><span class="tag tag-flare">Declining</span></div><div style="font-size: 15px;color:var(--text-faint);margin-top:4px;">Net Cap Gap movement over the last 4 scored action(s): +5 points — Declining. (Simple directional trend, not a fitted Kalman/Bayesian model.)</div></div>
+        <div style="background:var(--panel);padding:14px 18px;"><div class="flex-between"><strong style="color:var(--vellum);font-size: 17px;">Weight Sensitivity</strong><span class="tag tag-beacon">Diagnostic</span></div><div style="font-size: 15px;color:var(--text-faint);margin-top:4px;">"Russia" — Signal Interference had the single largest Cap Gap impact this session (+7 points).</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size: 14px;color:var(--text-faint);margin-bottom:20px;">Exported in a Charlie-style structure (framework, PI, institution, five dimensions) in the Streamlit build — this instrument has no access to Charlie Lab's actual ingestion schema, so treat this as WinterStorm2030's own record, not a guaranteed-compatible upload.</div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Treaty Performance Metrics</div><div class="panel-meta">Annex C model</div></div>
+    <div class="grid-3">
+      <div class="readout"><div class="readout-label">Covered Incidents Logged</div><div class="readout-value" style="font-size: 29px;">7</div><div class="readout-sub">Article 4 + Hormuz Calibration logs</div></div>
+      <div class="readout"><div class="readout-label">Avg. Time to Notice</div><div class="readout-value" style="font-size: 29px;">4m 12s</div><div class="readout-sub">Proxy metric — reuses Decision Velocity</div></div>
+      <div class="readout brass"><div class="readout-label">Arbitration Opened / Resolved</div><div class="readout-value brass" style="font-size: 29px;">3 / 1</div><div class="readout-sub">33% reached a binding ruling this session</div></div>
+    </div>
+    <div style="font-size: 15px;color:var(--text-faint);margin-top:14px;">Most recurring violation category tagged this session: <strong style="color:var(--vellum);">Unsafe Interference</strong> (3 occurrences).</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Evidence Ledger</div><div class="panel-meta" id="evidenceLedgerCount">0 session-logged records</div></div>
+    <table>
+      <thead><tr><th>Turn</th><th>Type</th><th>Title / Description</th><th>Source / Domain</th><th>Evidentiary Status</th></tr></thead>
+      <tbody id="evidenceLedgerStatic">
+        <tr><td>2</td><td>Article 4 Tag</td><td style="color:var(--text-dim);">Signal interference near GIUK corridor</td><td>Undersea Surveillance</td><td><span class="tag tag-beacon">LIVE (OSINT)</span> <span class="tag" style="background:transparent;border:1px solid var(--line2);color:var(--text-faint);">EXAMPLE</span></td></tr>
+        <tr><td>—</td><td>Governance Lab Live Query</td><td style="color:var(--text-dim);">"Svalbard vessel activity" for North Atlantic Treaty</td><td>GDELT</td><td><span class="tag tag-beacon">LIVE (OSINT)</span> <span class="tag" style="background:transparent;border:1px solid var(--line2);color:var(--text-faint);">EXAMPLE</span></td></tr>
+        <tr><td>—</td><td>Arbitration Ruling</td><td style="color:var(--text-dim);">Unsafe Interference vs GIUK Undersea Cable Corridor — CLOSED</td><td>Arbitration Tribunal</td><td><span class="tag tag-brass">ARBITRATION (rules-based, not live)</span> <span class="tag" style="background:transparent;border:1px solid var(--line2);color:var(--text-faint);">EXAMPLE</span></td></tr>
+        <tr><td>4</td><td>Article 4 Tag</td><td style="color:var(--text-dim);">Vessel loitering, Svalbard EEZ</td><td>Command &amp; Communications</td><td><span class="tag tag-brass">ANALYST</span> <span class="tag" style="background:transparent;border:1px solid var(--line2);color:var(--text-faint);">EXAMPLE</span></td></tr>
+      </tbody>
+      <tbody id="evidenceLedgerBody">
+        <tr id="evidenceLedgerEmptyRow"><td colspan="5" style="color:var(--text-faint);text-align:center;padding:16px;">No session-logged records yet — log a document in Governance Lab, or tag an OSINT event as Article 4 on the OSINT Feed tab.</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size: 14px;color:var(--text-faint);margin-top:12px;">Rows marked EXAMPLE are static reference data. CSV export is available in the Streamlit build; here the ledger below the divider updates live from this session's own actions.</div>
+  </div>
+</div>
+
+<!-- ══════════ OSINT FEED (v3.7) ══════════ -->
+<div id="tab-osint" class="tab-content">
+  <div class="section-title">Open-Source Intelligence Feed <small>Real Event Data // No LLM API Call</small></div>
+  <div class="info-strip" style="border-left-color:var(--beacon);"><strong>WHY THIS TAB EXISTS</strong> — Everything below comes from the GDELT Project, a free, unclassified, publicly documented open-source event database (no API key, no generative AI, no vendor endpoint). It's a direct substitute for the Anthropic API for teams that can't clear a commercial LLM call: real reported events instead of AI-generated ones.</div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Pull Live Events</div></div>
+    <div class="grid-3" style="align-items:end;">
+      <div><label class="field-label">Theatre</label>
+        <select id="osintTheatre" class="input-field" onchange="onTheatreChange()">
+          <option value="arctic">Arctic High North (live session)</option>
+          <option value="hormuz">Strait of Hormuz (calibration baseline)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div><label class="field-label">Window</label>
+        <select id="osintTimespan" class="input-field"><option value="1d">Last 24 hours</option><option value="3d">Last 3 days</option><option value="7d" selected>Last 7 days</option><option value="30d">Last 30 days</option></select>
+      </div>
+      <div><button class="btn btn-beacon" style="width:100%;" onclick="fetchOSINT()">Pull Feed</button></div>
+    </div>
+    <div style="margin-top:12px;"><label class="field-label">Search Terms</label><input type="text" id="osintQuery" class="input-field" value="Arctic Svalbard Greenland NATO Russia" placeholder="keywords"/></div>
+    <div id="osintStatus" style="margin-top:12px;font-family:var(--font-m);font-size:14px;color:var(--text-faint);"></div>
+    <div class="info-strip" style="border-left-color:var(--brass);margin-top:14px;"><strong>WHY A SEPARATE THEATRE</strong> — Hormuz is data-rich (frequent tanker seizures, GPS spoofing, IRGC intercepts) where the Arctic is data-sparse — useful precisely because it's a different theatre. Hormuz events are tagged into a standalone Calibration Log below, not blended into the live Arctic Cap Gap, so validating the scoring model doesn't quietly contaminate the Arctic session.</div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Tag Selected Item As</div></div>
+    <div class="grid-2">
+      <div><label class="field-label">Actor (for Concession tagging)</label>
+        <select id="osintActor" class="input-field">
+          <option value="norway">Norway</option><option value="denmark">Denmark/Greenland</option><option value="finland">Finland</option>
+          <option value="iceland">Iceland</option><option value="canada">Canada</option><option value="us">United States</option><option value="russia" selected>Russia</option><option value="china">China</option>
+        </select>
+      </div>
+      <div><label class="field-label">Concession Type</label>
+        <select id="osintType" class="input-field"><option value="access">Access</option><option value="resource">Resource</option><option value="narrative" selected>Narrative-Legal</option></select>
+      </div>
+    </div>
+    <div style="font-size: 15px;color:var(--text-faint);margin-top:10px;">Set these once, then use the "→ Concession" / "→ Article 4" buttons on each article below. This is how a real news item becomes a scored session event. Hormuz-theatre articles show a "→ Calibration Log" button instead.</div>
+  </div>
+
+  <div class="panel mb20">
+    <div class="panel-head"><div class="panel-title">Live Feed</div></div>
+    <div id="osintFeed"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No feed pulled yet. Click "Pull Feed" above.</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Article 4 Stress Test Log <span class="panel-meta" id="article4Count">0 events</span></div></div>
+    <div style="font-size: 16px;color:var(--text-faint);margin-bottom:12px;">Real events tagged here are grey-zone activity that moved the Cap Gap but stayed below what current Article 4 language ("territorial integrity, political independence, or security... threatened") plainly covers — the evidence base for the Disruptive Capabilities Article 4 revision ask.</div>
+    <div class="info-strip" style="border-left-color:var(--brass);"><strong>KNOWN GAP</strong> — A written legal rubric for what counts as "below Article 4" — ideally reviewed by outside eyes, not just this tool's tagging judgment — is still open, and is still the most important gap before WinterStorm2030's output can be called sound empirical evidence rather than illustrative analysis.</div>
+    <div id="article4Log"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No Article 4 events tagged yet.</div></div>
+  </div>
+
+  <div class="panel" style="margin-top:20px;border-top:3px solid var(--brass);">
+    <div class="panel-head"><div class="panel-title">Strait of Hormuz — Calibration Baseline <span class="panel-meta" id="calibCount">0 events</span></div></div>
+    <div style="font-size: 16px;color:var(--text-faint);margin-bottom:12px;">A standalone, non-scoring log of real Hormuz events, tagged with the same 7-category grey-zone violation taxonomy used at the Arbitration Track. Purpose: test whether that taxonomy and the underlying scoring logic behave sensibly against a data-rich, well-documented real-world theatre — <em>before</em> trusting the same logic on the (data-sparse) Arctic scenario. Does not affect the live Arctic Cap Gap.</div>
+    <div class="info-strip" style="border-left-color:var(--fathom-lt);"><strong>AUTO-ANALYSIS SCOPE</strong> — Runs automatically as events are tagged, using GDELT tone and real event timestamps already in the data. It does not track tanker rerouting or insurance rates directly — those need AIS/shipping-rate feeds this build deliberately doesn't call — so treat tone/frequency trends below as proxies, not confirmed real-world indicators.</div>
+    <div class="panel" style="background:var(--ink2);margin-bottom:16px;" id="calibAnalysis"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 15px;">Tag at least 2 Hormuz events to generate an automatic trend read.</div></div>
+    <div id="calibLog"><div style="color:var(--text-faint);font-family:var(--font-m);font-size: 16px;text-align:center;padding:20px;">No Hormuz calibration events tagged yet. Set Theatre to "Strait of Hormuz" above and pull a feed.</div></div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<div class="footer" id="mainFooter" style="display:none;">UNCLASSIFIED // FOR OFFICIAL USE // SAS-219 PANEL ONLY &nbsp;·&nbsp; WINTERSTORM2030 v7.0 &nbsp;·&nbsp; © 2026 AURACELLE AI GOVERNANCE LABS &nbsp;·&nbsp; EVANS, GRACE-ALICE (MS.) — FOUNDER & PRINCIPAL INVESTIGATOR</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
